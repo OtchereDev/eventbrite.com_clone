@@ -5,7 +5,7 @@ from django.contrib.auth.models import (AbstractBaseUser,
                                         PermissionsMixin,
                                         BaseUserManager)
 
-from django.db.models.signals import pre_save
+from django.db.models.signals import pre_save,post_save
 from django.dispatch import receiver
 from django.utils.text import slugify
 from django.core.validators import MinValueValidator
@@ -94,5 +94,11 @@ class Participant(models.Model):
     email=models.EmailField(max_length=350)
     full_name=models.CharField(max_length=255)
     event_reg= models.ForeignKey(Event, on_delete=models.CASCADE)
-    ticket_no=models.PositiveIntegerField(validators=[MinValueValidator(1)])
+    ticket_no=models.PositiveIntegerField(validators=[MinValueValidator(1)],null=True,blank=True)
 
+@receiver(post_save, sender=Participant) 
+def Particant_postsave(sender,instance,created,**kwargs):
+    if created:
+        if not instance.ticket_no:
+            instance.ticket_no=Participant.objects.filter(event_reg=instance.event_reg).count()
+            instance.save()

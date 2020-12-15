@@ -4,8 +4,7 @@ from django.views.generic import (ListView,DetailView,CreateView,
 
 from .models import Event,Participant
 from .forms import EventForm,TicketForm
-from django.http import Http404
-
+from django.http import HttpResponse,HttpResponseNotFound,Http404
 class EventList(ListView):
     template_name='event_list.html'
     context_object_name='events'
@@ -29,23 +28,16 @@ class EventCreate(CreateView):
 
 
 
-class TicketCreate(CreateView):
-    template_name='ticket.html'
-    form_class=TicketForm
-    model=Participant
-    success_url='/'
-
-    # form.instance.story = Story.objects.get(slug=self.kwargs['slug'])
-    # print(Event.objects.filter(slug=self.kwargs['slug']).exists())
-
-    # def get(self, request):
-    #     if Event.objects.filter(slug=self.kwargs['slug']).exists():
-       
-    #         return super().get(request)
-    #     else:
-    #         return Http404
-
-    def form_valid(self,form):
+def ticketView(request,slug):
+    if  not Event.objects.filter(slug=slug).exists():
+        raise Http404
+    form = TicketForm(request.POST or None)
+    if form.is_valid():
         form_done=form.save(commit=False)
-        form_done.publisher=self.request.user           
-        return super().form_valid(form)
+        form_done.event_reg=Event.objects.get(slug=slug)    
+        form_done.save()
+    context={
+        'form':form
+    }
+    print(form)
+    return render(request,'ticket.html',context)

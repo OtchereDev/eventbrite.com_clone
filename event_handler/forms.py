@@ -1,6 +1,6 @@
 from django import forms 
 from django.forms import ModelForm
-from .models import Event 
+from .models import Event,Participant
 
 
 class EventForm(ModelForm):
@@ -19,8 +19,13 @@ class EventForm(ModelForm):
         # 'publisher':forms.TextInput(attrs={'class':'form-control','readonly':True}),
         # }
 
-class TicketForm(forms.Form):
+class TicketForm(forms.ModelForm):
     email=forms.TextInput()
-    full_name=forms.TextInput()
+    full_name=forms.Textarea()
+
+    class Meta:
+        model=Participant
+        fields=['email',
+                'full_name']
 
   
